@@ -9,6 +9,8 @@ import Dashboard from "@/pages/Dashboard";
 import LocalRankings from "@/pages/LocalRankings";
 import Reviews from "@/pages/Reviews";
 import Competitors from "@/pages/Competitors";
+import Leads from "@/pages/Leads";
+import GoogleBusiness from "@/pages/GoogleBusiness";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -32,6 +34,8 @@ function Router() {
         <Route path="/local-rankings" component={LocalRankings} />
         <Route path="/reviews" component={Reviews} />
         <Route path="/competitors" component={Competitors} />
+        <Route path="/leads" component={Leads} />
+        <Route path="/profile" component={GoogleBusiness} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
