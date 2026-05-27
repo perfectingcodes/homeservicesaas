@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Home Service SEO Tool"
+version = "1.0.0"
+id = "artifacts/seo-tool-demo"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19336
+
+[services.development]
+run = "pnpm --filter @workspace/seo-tool-demo run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/seo-tool-demo", "run", "build" ]
+publicDir = "artifacts/seo-tool-demo/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19336"
+BASE_PATH = "/"
