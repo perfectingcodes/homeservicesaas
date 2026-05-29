@@ -3,13 +3,19 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: RankRight API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: clients
+    description: Client (audit subject) management
+  - name: audits
+    description: SEO audit runs
+  - name: auth
+    description: Session / current user
 paths:
   /healthz:
     get:
@@ -24,6 +30,126 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      summary: Current user
+      responses:
+        "200":
+          description: Current authenticated user + agency
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CurrentUser"
+  /clients:
+    get:
+      operationId: listClients
+      tags: [clients]
+      summary: List clients for the current agency
+      responses:
+        "200":
+          description: list of clients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Client"
+    post:
+      operationId: createClient
+      tags: [clients]
+      summary: Add a client to the current agency
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateClientInput"
+      responses:
+        "201":
+          description: created client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+  /clients/{clientId}:
+    parameters:
+      - in: path
+        name: clientId
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getClient
+      tags: [clients]
+      summary: Get a single client
+      responses:
+        "200":
+          description: client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+  /clients/{clientId}/audits:
+    parameters:
+      - in: path
+        name: clientId
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: listClientAudits
+      tags: [audits]
+      summary: List audit history for a client
+      responses:
+        "200":
+          description: audits
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Audit"
+  /audits:
+    post:
+      operationId: runAudit
+      tags: [audits]
+      summary: Run an audit for a client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RunAuditInput"
+      responses:
+        "201":
+          description: completed audit (with checks)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditDetail"
+  /audits/{auditId}:
+    parameters:
+      - in: path
+        name: auditId
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getAudit
+      tags: [audits]
+      summary: Get an audit with its checks
+      responses:
+        "200":
+          description: audit detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditDetail"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +159,143 @@ components:
           type: string
       required:
         - status
-
+    CurrentUser:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        email:
+          type: string
+        name:
+          type: string
+          nullable: true
+        agencyId:
+          type: string
+          format: uuid
+        agencyName:
+          type: string
+      required:
+        - userId
+        - email
+        - agencyId
+        - agencyName
+    Client:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        websiteUrl:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        placeId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, name, createdAt]
+    CreateClientInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        websiteUrl:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+      required: [name]
+    RunAuditInput:
+      type: object
+      properties:
+        clientId:
+          type: string
+          format: uuid
+      required: [clientId]
+    Audit:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [running, complete, failed]
+        score:
+          type: integer
+          nullable: true
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        error:
+          type: string
+          nullable: true
+      required: [id, clientId, status, startedAt]
+    AuditCheck:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        checkKey:
+          type: string
+        title:
+          type: string
+        category:
+          type: string
+          enum: [gbp, seo, performance, nap, tech, analytics]
+        status:
+          type: string
+          enum: [pass, warn, fail, stub, error]
+        score:
+          type: integer
+        weight:
+          type: integer
+        finding:
+          type: string
+        recommendation:
+          type: string
+      required:
+        - id
+        - checkKey
+        - title
+        - category
+        - status
+        - score
+        - weight
+        - finding
+        - recommendation
+    AuditDetail:
+      type: object
+      properties:
+        audit:
+          $ref: "#/components/schemas/Audit"
+        client:
+          $ref: "#/components/schemas/Client"
+        checks:
+          type: array
+          items:
+            $ref: "#/components/schemas/AuditCheck"
+      required: [audit, client, checks]

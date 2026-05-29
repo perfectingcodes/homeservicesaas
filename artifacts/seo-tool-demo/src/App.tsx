@@ -1,22 +1,52 @@
-import React from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { Route, Switch, useLocation } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Sidebar } from "@/components/Sidebar";
-import Home from "@/pages/Home";
+import { AppLayout } from "@/components/AppLayout";
+import { queryClient } from "@/lib/queryClient";
+import { getProviderId } from "@/lib/auth";
 
-const queryClient = new QueryClient();
+import Dashboard from "@/pages/Dashboard";
+import ClientsList from "@/pages/ClientsList";
+import ClientDetail from "@/pages/ClientDetail";
+import AuditView from "@/pages/AuditView";
+import Login from "@/pages/Login";
+import NotFound from "@/pages/not-found";
+
+function AuthGate({ children }: { children: React.ReactNode }) {
+  const [, setLocation] = useLocation();
+  const hasAuth = getProviderId();
+  if (!hasAuth) {
+    setLocation("/login");
+    return null;
+  }
+  return <>{children}</>;
+}
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <div className="flex min-h-screen w-full bg-background">
-          <Sidebar />
-          <main className="flex-1 overflow-auto pt-14 lg:pt-0">
-            <Home />
-          </main>
-        </div>
+        <Switch>
+          <Route path="/login" component={Login} />
+          <Route>
+            <AuthGate>
+              <AppLayout>
+                <Switch>
+                  <Route path="/" component={Dashboard} />
+                  <Route path="/clients" component={ClientsList} />
+                  <Route path="/clients/:id">
+                    {(params) => <ClientDetail id={params.id} />}
+                  </Route>
+                  <Route path="/audits/:id">
+                    {(params) => <AuditView id={params.id} />}
+                  </Route>
+                  <Route component={NotFound} />
+                </Switch>
+              </AppLayout>
+            </AuthGate>
+          </Route>
+        </Switch>
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
