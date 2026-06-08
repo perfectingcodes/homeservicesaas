@@ -13,11 +13,12 @@ Self-serve SEO audits for home service businesses (HVAC, plumbing, electrical, r
 
 ### Required env
 
-- `DATABASE_URL` — Postgres connection string
-- `GOOGLE_API_KEY` (or `GOOGLE_PLACES_API_KEY` + `PAGESPEED_API_KEY`) — used for Places New + PageSpeed Insights
-- `TOKEN_ENC_KEY` — 32-byte key (hex or base64) used by `@workspace/shared` AES-GCM helper. Generate one with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
-- `PORT` — required by api-server (default 5000)
-- `DEV_USER_PROVIDER_ID` (optional, non-prod) — provider id used when no `x-user-id` / bearer is sent; defaults to `dev-user`
+- `DATABASE_URL` — Postgres connection string (the API now prints a clear banner and exits if it's missing).
+- `GOOGLE_API_KEY` (or `GOOGLE_PLACES_API_KEY` + `PAGESPEED_API_KEY`) — used for Places New + PageSpeed Insights.
+- `TOKEN_ENC_KEY` — 32-byte key (hex or base64) used by `@workspace/shared` AES-GCM helper. Used by `/connections` to encrypt user-supplied access/refresh tokens at rest. Generate one with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
+- `ANTHROPIC_API_KEY` (optional) — when set, `POST /audits/:id/plan` calls Claude (sonnet-4-6) to write a personalized 14-day improvement plan from the audit findings.
+- `PORT` — api-server port (default 5000).
+- `DEV_USER_PROVIDER_ID` (optional, non-prod) — provider id used when no `x-user-id` / bearer is sent; defaults to `dev-user`.
 
 ### Sign-up / sign-in
 

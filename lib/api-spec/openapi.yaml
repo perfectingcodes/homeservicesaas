@@ -167,6 +167,77 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AuditDetail"
+  /audits/{auditId}/plan:
+    parameters:
+      - in: path
+        name: auditId
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      operationId: generateAuditPlan
+      tags: [audits]
+      summary: Generate an AI-written 14-day improvement plan from this audit
+      responses:
+        "200":
+          description: plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditPlan"
+        "503":
+          description: AI not configured
+  /connections:
+    get:
+      operationId: listConnections
+      tags: [auth]
+      summary: List the current business's connected providers (GBP/GA4/GSC)
+      responses:
+        "200":
+          description: connections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Connection"
+    post:
+      operationId: upsertConnection
+      tags: [auth]
+      summary: Connect / update credentials for a provider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertConnectionInput"
+      responses:
+        "201":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResult"
+  /connections/{provider}:
+    parameters:
+      - in: path
+        name: provider
+        required: true
+        schema:
+          type: string
+          enum: [gbp, ga4, gsc]
+    delete:
+      operationId: deleteConnection
+      tags: [auth]
+      summary: Disconnect a provider
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResult"
   /audits/{auditId}:
     parameters:
       - in: path
@@ -378,3 +449,52 @@ components:
           items:
             $ref: "#/components/schemas/AuditCheck"
       required: [audit, client, checks]
+    AuditPlan:
+      type: object
+      properties:
+        markdown:
+          type: string
+        model:
+          type: string
+      required: [markdown, model]
+    Connection:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        provider:
+          type: string
+          enum: [gbp, ga4, gsc]
+        externalAccountId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, provider, createdAt, updatedAt]
+    UpsertConnectionInput:
+      type: object
+      properties:
+        provider:
+          type: string
+          enum: [gbp, ga4, gsc]
+        accessToken:
+          type: string
+          nullable: true
+        refreshToken:
+          type: string
+          nullable: true
+        externalAccountId:
+          type: string
+          nullable: true
+      required: [provider]
+    OkResult:
+      type: object
+      properties:
+        ok:
+          type: boolean
+      required: [ok]

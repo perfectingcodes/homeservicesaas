@@ -149,6 +149,55 @@ export const RunAuditBody = zod.object({
 
 
 /**
+ * @summary Generate an AI-written 14-day improvement plan from this audit
+ */
+export const GenerateAuditPlanParams = zod.object({
+  "auditId": zod.coerce.string().uuid()
+})
+
+export const GenerateAuditPlanResponse = zod.object({
+  "markdown": zod.string(),
+  "model": zod.string()
+})
+
+
+/**
+ * @summary List the current business's connected providers (GBP/GA4/GSC)
+ */
+export const ListConnectionsResponseItem = zod.object({
+  "id": zod.string().uuid(),
+  "provider": zod.enum(['gbp', 'ga4', 'gsc']),
+  "externalAccountId": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListConnectionsResponse = zod.array(ListConnectionsResponseItem)
+
+
+/**
+ * @summary Connect / update credentials for a provider
+ */
+export const UpsertConnectionBody = zod.object({
+  "provider": zod.enum(['gbp', 'ga4', 'gsc']),
+  "accessToken": zod.string().nullish(),
+  "refreshToken": zod.string().nullish(),
+  "externalAccountId": zod.string().nullish()
+})
+
+
+/**
+ * @summary Disconnect a provider
+ */
+export const DeleteConnectionParams = zod.object({
+  "provider": zod.enum(['gbp', 'ga4', 'gsc'])
+})
+
+export const DeleteConnectionResponse = zod.object({
+  "ok": zod.boolean()
+})
+
+
+/**
  * @summary Get an audit with its checks
  */
 export const GetAuditParams = zod.object({

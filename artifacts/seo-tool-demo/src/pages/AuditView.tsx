@@ -2,7 +2,6 @@ import { Link } from "wouter";
 import { useGetAudit } from "@workspace/api-client-react";
 import type { AuditCheck } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
 import {
   ChevronLeft,
   CheckCircle2,
@@ -20,6 +19,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { ScoreBadge } from "@/components/ScoreBadge";
+import { AiPlanCard } from "@/components/AiPlanCard";
 import { cn } from "@/lib/utils";
 
 const CATEGORY_META: Record<
@@ -145,10 +145,10 @@ export default function AuditView({ id }: { id: string }) {
 
   return (
     <div className="max-w-5xl mx-auto px-6 lg:px-12 py-10 lg:py-14 space-y-14">
-      <Link href={`/clients/${client.id}`}>
+      <Link href="/">
         <button className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground -ml-1 transition-colors">
           <ChevronLeft className="h-3.5 w-3.5" />
-          {client.name}
+          Back to overview
         </button>
       </Link>
 
@@ -216,6 +216,9 @@ export default function AuditView({ id }: { id: string }) {
           </div>
         )}
       </section>
+
+      {/* AI improvement plan */}
+      {audit.status === "complete" && <AiPlanCard auditId={audit.id} />}
 
       {/* Fix this next */}
       {topFixes.length > 0 && (
