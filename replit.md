@@ -21,6 +21,7 @@ Self-serve SEO audits for home service businesses (HVAC, plumbing, electrical, r
 - `OAUTH_REDIRECT_BASE_URL` (default `http://localhost:5000`) — the API origin Google should redirect back to after consent.
 - `WEB_BASE_URL` (default `http://localhost:5173`) — where the API redirects the owner back to after the callback finishes.
 - `PORT` — api-server port (default 5000).
+- `VITE_API_PROXY_TARGET` (optional, web dev only) — where the Vite dev server should forward `/api/*` calls. Defaults to `http://localhost:5000`. Override if your api-server runs on a different host/port.
 - `DEV_USER_PROVIDER_ID` (optional, non-prod) — provider id used when no `x-user-id` / bearer is sent; defaults to `dev-user`.
 
 ### Google OAuth setup (5 minutes, free)
