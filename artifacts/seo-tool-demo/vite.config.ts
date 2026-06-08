@@ -9,6 +9,11 @@ const port = rawPort ? Number(rawPort) : 5173;
 
 const basePath = process.env.BASE_PATH ?? "/";
 
+// Where the API server is reachable from inside the dev server. Override via
+// VITE_API_PROXY_TARGET for non-local backends.
+const apiProxyTarget =
+  process.env.VITE_API_PROXY_TARGET ?? "http://localhost:5000";
+
 export default defineConfig({
   base: basePath,
   plugins: [
@@ -48,6 +53,12 @@ export default defineConfig({
     allowedHosts: true,
     fs: {
       strict: true,
+    },
+    proxy: {
+      "/api": {
+        target: apiProxyTarget,
+        changeOrigin: true,
+      },
     },
   },
   preview: {

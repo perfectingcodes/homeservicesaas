@@ -35,7 +35,22 @@ export default function Login() {
       setProviderId(res.providerId);
       setLocation("/");
     } catch (e: any) {
-      setErr(e?.message ?? "Demo sign-in failed.");
+      const status = e?.status;
+      if (status === 502 || status === 503 || status === 504) {
+        setErr(
+          "API isn't reachable (gateway error). Make sure the api-server is running on port 5000 and DATABASE_URL is set.",
+        );
+      } else if (status === 500) {
+        setErr(
+          `Demo bootstrap failed on the server: ${e?.data?.message ?? e?.message ?? "unknown error"}. Common cause: the DB schema hasn't been pushed (\`pnpm --filter @workspace/db run push\`).`,
+        );
+      } else {
+        setErr(
+          e?.message
+            ? `${e.message}${status ? ` (HTTP ${status})` : ""}`
+            : "Demo sign-in failed.",
+        );
+      }
     }
   }
 
