@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, History, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, History, Plug, LogOut, Menu, X } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useGetCurrentUser } from "@workspace/api-client-react";
@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/", label: "Overview", icon: LayoutDashboard },
   { href: "/history", label: "Audit history", icon: History },
+  { href: "/connections", label: "Connections", icon: Plug },
 ];
 
 function Logomark({ className }: { className?: string }) {
@@ -78,12 +79,12 @@ function NavContent({ onNav }: { onNav?: () => void }) {
         <div className="flex items-center gap-3">
           <Avatar className="h-9 w-9">
             <AvatarFallback className="bg-accent text-accent-foreground text-[11px] font-semibold">
-              {(data?.agencyName ?? "??").slice(0, 2).toUpperCase()}
+              {(data?.businessName ?? data?.agencyName ?? "??").slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col min-w-0 leading-tight">
             <span className="text-[13px] font-medium text-white truncate">
-              {data?.agencyName ?? "—"}
+              {data?.businessName ?? "Your business"}
             </span>
             <span className="text-[11px] text-white/50 truncate">{data?.email ?? ""}</span>
           </div>

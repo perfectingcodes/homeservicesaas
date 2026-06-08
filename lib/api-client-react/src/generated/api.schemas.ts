@@ -120,3 +120,45 @@ export interface AuditDetail {
   checks: AuditCheck[];
 }
 
+export interface AuditPlan {
+  markdown: string;
+  model: string;
+}
+
+export type ConnectionProvider = typeof ConnectionProvider[keyof typeof ConnectionProvider];
+
+
+export const ConnectionProvider = {
+  gbp: 'gbp',
+  ga4: 'ga4',
+  gsc: 'gsc',
+} as const;
+
+export interface Connection {
+  id: string;
+  provider: ConnectionProvider;
+  externalAccountId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type UpsertConnectionInputProvider = typeof UpsertConnectionInputProvider[keyof typeof UpsertConnectionInputProvider];
+
+
+export const UpsertConnectionInputProvider = {
+  gbp: 'gbp',
+  ga4: 'ga4',
+  gsc: 'gsc',
+} as const;
+
+export interface UpsertConnectionInput {
+  provider: UpsertConnectionInputProvider;
+  accessToken?: string | null;
+  refreshToken?: string | null;
+  externalAccountId?: string | null;
+}
+
+export interface OkResult {
+  ok: boolean;
+}
+

@@ -22,14 +22,18 @@ import type {
 import type {
   Audit,
   AuditDetail,
+  AuditPlan,
   Client,
+  Connection,
   CreateClientInput,
   CurrentUser,
   HealthStatus,
+  OkResult,
   RunAuditInput,
   SigninInput,
   SignupInput,
-  SignupResult
+  SignupResult,
+  UpsertConnectionInput
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -712,6 +716,294 @@ export const useRunAudit = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getRunAuditMutationOptions(options));
+    }
+
+export const getGenerateAuditPlanUrl = (auditId: string,) => {
+
+
+
+
+  return `/api/audits/${auditId}/plan`
+}
+
+/**
+ * @summary Generate an AI-written 14-day improvement plan from this audit
+ */
+export const generateAuditPlan = async (auditId: string, options?: RequestInit): Promise<AuditPlan> => {
+
+  return customFetch<AuditPlan>(getGenerateAuditPlanUrl(auditId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getGenerateAuditPlanMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateAuditPlan>>, TError,{auditId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof generateAuditPlan>>, TError,{auditId: string}, TContext> => {
+
+const mutationKey = ['generateAuditPlan'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateAuditPlan>>, {auditId: string}> = (props) => {
+          const {auditId} = props ?? {};
+
+          return  generateAuditPlan(auditId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GenerateAuditPlanMutationResult = NonNullable<Awaited<ReturnType<typeof generateAuditPlan>>>
+
+    export type GenerateAuditPlanMutationError = ErrorType<void>
+
+    /**
+ * @summary Generate an AI-written 14-day improvement plan from this audit
+ */
+export const useGenerateAuditPlan = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateAuditPlan>>, TError,{auditId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof generateAuditPlan>>,
+        TError,
+        {auditId: string},
+        TContext
+      > => {
+      return useMutation(getGenerateAuditPlanMutationOptions(options));
+    }
+
+export const getListConnectionsUrl = () => {
+
+
+
+
+  return `/api/connections`
+}
+
+/**
+ * @summary List the current business's connected providers (GBP/GA4/GSC)
+ */
+export const listConnections = async ( options?: RequestInit): Promise<Connection[]> => {
+
+  return customFetch<Connection[]>(getListConnectionsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListConnectionsQueryKey = () => {
+    return [
+    `/api/connections`
+    ] as const;
+    }
+
+
+export const getListConnectionsQueryOptions = <TData = Awaited<ReturnType<typeof listConnections>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listConnections>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListConnectionsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listConnections>>> = ({ signal }) => listConnections({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listConnections>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListConnectionsQueryResult = NonNullable<Awaited<ReturnType<typeof listConnections>>>
+export type ListConnectionsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List the current business's connected providers (GBP/GA4/GSC)
+ */
+
+export function useListConnections<TData = Awaited<ReturnType<typeof listConnections>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listConnections>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListConnectionsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpsertConnectionUrl = () => {
+
+
+
+
+  return `/api/connections`
+}
+
+/**
+ * @summary Connect / update credentials for a provider
+ */
+export const upsertConnection = async (upsertConnectionInput: UpsertConnectionInput, options?: RequestInit): Promise<OkResult> => {
+
+  return customFetch<OkResult>(getUpsertConnectionUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      upsertConnectionInput,)
+  }
+);}
+
+
+
+
+export const getUpsertConnectionMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof upsertConnection>>, TError,{data: BodyType<UpsertConnectionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof upsertConnection>>, TError,{data: BodyType<UpsertConnectionInput>}, TContext> => {
+
+const mutationKey = ['upsertConnection'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof upsertConnection>>, {data: BodyType<UpsertConnectionInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  upsertConnection(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpsertConnectionMutationResult = NonNullable<Awaited<ReturnType<typeof upsertConnection>>>
+    export type UpsertConnectionMutationBody = BodyType<UpsertConnectionInput>
+    export type UpsertConnectionMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Connect / update credentials for a provider
+ */
+export const useUpsertConnection = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof upsertConnection>>, TError,{data: BodyType<UpsertConnectionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof upsertConnection>>,
+        TError,
+        {data: BodyType<UpsertConnectionInput>},
+        TContext
+      > => {
+      return useMutation(getUpsertConnectionMutationOptions(options));
+    }
+
+export const getDeleteConnectionUrl = (provider: 'gbp' | 'ga4' | 'gsc',) => {
+
+
+
+
+  return `/api/connections/${provider}`
+}
+
+/**
+ * @summary Disconnect a provider
+ */
+export const deleteConnection = async (provider: 'gbp' | 'ga4' | 'gsc', options?: RequestInit): Promise<OkResult> => {
+
+  return customFetch<OkResult>(getDeleteConnectionUrl(provider),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteConnectionMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteConnection>>, TError,{provider: 'gbp' | 'ga4' | 'gsc'}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteConnection>>, TError,{provider: 'gbp' | 'ga4' | 'gsc'}, TContext> => {
+
+const mutationKey = ['deleteConnection'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteConnection>>, {provider: 'gbp' | 'ga4' | 'gsc'}> = (props) => {
+          const {provider} = props ?? {};
+
+          return  deleteConnection(provider,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteConnectionMutationResult = NonNullable<Awaited<ReturnType<typeof deleteConnection>>>
+
+    export type DeleteConnectionMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Disconnect a provider
+ */
+export const useDeleteConnection = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteConnection>>, TError,{provider: 'gbp' | 'ga4' | 'gsc'}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteConnection>>,
+        TError,
+        {provider: 'gbp' | 'ga4' | 'gsc'},
+        TContext
+      > => {
+      return useMutation(getDeleteConnectionMutationOptions(options));
     }
 
 export const getGetAuditUrl = (auditId: string,) => {

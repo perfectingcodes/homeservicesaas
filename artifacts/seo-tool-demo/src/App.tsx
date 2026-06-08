@@ -8,6 +8,7 @@ import { getProviderId } from "@/lib/auth";
 
 import Dashboard from "@/pages/Dashboard";
 import History from "@/pages/History";
+import Connections from "@/pages/Connections";
 import AuditView from "@/pages/AuditView";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
@@ -37,6 +38,7 @@ function App() {
                 <Switch>
                   <Route path="/" component={Dashboard} />
                   <Route path="/history" component={History} />
+                  <Route path="/connections" component={Connections} />
                   <Route path="/audits/:id">
                     {(params) => <AuditView id={params.id} />}
                   </Route>

@@ -4,6 +4,8 @@ import authRouter from "./auth";
 import meRouter from "./me";
 import clientsRouter from "./clients";
 import auditsRouter from "./audits";
+import connectionsRouter from "./connections";
+import planRouter from "./plan";
 
 const router: IRouter = Router();
 
@@ -12,5 +14,7 @@ router.use(authRouter);
 router.use(meRouter);
 router.use(clientsRouter);
 router.use(auditsRouter);
+router.use(connectionsRouter);
+router.use(planRouter);
 
 export default router;
