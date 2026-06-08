@@ -17,12 +17,33 @@ Self-serve SEO audits for home service businesses (HVAC, plumbing, electrical, r
 - `GOOGLE_API_KEY` (or `GOOGLE_PLACES_API_KEY` + `PAGESPEED_API_KEY`) — used for Places New + PageSpeed Insights.
 - `TOKEN_ENC_KEY` — 32-byte key (hex or base64) used by `@workspace/shared` AES-GCM helper. Used by `/connections` to encrypt user-supplied access/refresh tokens at rest. Generate one with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
 - `ANTHROPIC_API_KEY` (optional) — when set, `POST /audits/:id/plan` calls Claude (sonnet-4-6) to write a personalized 14-day improvement plan from the audit findings.
+- `GOOGLE_OAUTH_CLIENT_ID` + `GOOGLE_OAUTH_CLIENT_SECRET` (optional) — one-click "Connect with Google" for GA4 + Search Console. See setup below.
+- `OAUTH_REDIRECT_BASE_URL` (default `http://localhost:5000`) — the API origin Google should redirect back to after consent.
+- `WEB_BASE_URL` (default `http://localhost:5173`) — where the API redirects the owner back to after the callback finishes.
 - `PORT` — api-server port (default 5000).
 - `DEV_USER_PROVIDER_ID` (optional, non-prod) — provider id used when no `x-user-id` / bearer is sent; defaults to `dev-user`.
 
+### Google OAuth setup (5 minutes, free)
+
+1. Open https://console.cloud.google.com and create a project (any name).
+2. Enable these APIs (APIs & Services → Library): **Google Analytics Admin API**, **Google Analytics Data API**, **Search Console API**.
+3. Configure the OAuth consent screen (External). Add yourself as a test user. App name = RankRight.
+4. APIs & Services → Credentials → Create credentials → OAuth client ID → Web application.
+   - Authorized redirect URI: `http://localhost:5000/api/auth/oauth/google/callback`
+5. Copy the Client ID + Secret into the api-server's env (`GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`).
+6. Restart the API. The Connections page now shows real "Connect with Google" buttons; consent → callback → tokens stored encrypted, and the next audit uses live GA4 + Search Console data.
+
+GBP (Google Business Profile) is wired but requires Google to approve API access (1–2 weeks). Apply at https://developers.google.com/my-business/content/prereqs — connect lights up the day they approve you.
+
 ### Sign-up / sign-in
 
-Self-serve: anyone can sign up at `/signup` with their email + business name. The API creates an internal agency + user + business row in one shot and hands back a `providerId` (currently `email:<lower-cased email>`). The web app stores that providerId in localStorage; the generated React Query client forwards it as `x-user-id` on every request. To upgrade to real auth (Clerk, Supabase, etc.), replace the providerId-generating server route + the `setProviderId` localStorage call — the rest of the stack is auth-agnostic.
+Three paths:
+
+- **Try the demo** — biggest button on both `/signup` and `/signin`. Calls `POST /auth/demo`, which idempotently bootstraps a fully-populated demo workspace (Mike's HVAC & Plumbing in Austin) with 3 audit runs and 19 realistic check results on the latest one, then signs you in. Same demo workspace every time — re-clicking just re-uses it. Perfect for dev / screenshots / showing the app to someone in 5 seconds.
+- **Sign up** at `/signup` with email + business name → creates a workspace + business + provider id (`email:<lower-cased email>`).
+- **Sign in** at `/signin` with the email you signed up with.
+
+The web app stores the provider id in localStorage; the generated React Query client forwards it as `x-user-id` on every request. To upgrade to real auth (Clerk, Supabase), replace the provider-id-generating server route + the `setProviderId` localStorage call — the rest of the stack is auth-agnostic.
 
 ## Stack
 

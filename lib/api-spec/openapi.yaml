@@ -35,6 +35,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SignupResult"
+  /auth/demo:
+    post:
+      operationId: signinAsDemo
+      tags: [auth]
+      summary: One-click demo sign-in — bootstraps a fully populated demo workspace
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignupResult"
   /auth/signin:
     post:
       operationId: signin
@@ -188,6 +200,31 @@ paths:
                 $ref: "#/components/schemas/AuditPlan"
         "503":
           description: AI not configured
+  /auth/oauth/google/start:
+    get:
+      operationId: startGoogleOAuth
+      tags: [auth]
+      summary: Get the Google OAuth consent URL for a provider
+      parameters:
+        - in: query
+          name: provider
+          required: true
+          schema:
+            type: string
+            enum: [ga4, gsc, gbp]
+      responses:
+        "200":
+          description: redirect url
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                required: [url]
+        "503":
+          description: OAuth not configured on server
   /connections:
     get:
       operationId: listConnections

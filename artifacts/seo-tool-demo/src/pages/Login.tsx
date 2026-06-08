@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useSignin } from "@workspace/api-client-react";
+import { useSignin, useSigninAsDemo } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { setProviderId } from "@/lib/auth";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2, Sparkles } from "lucide-react";
 
 export default function Login() {
   const [, setLocation] = useLocation();
   const signinMut = useSignin();
+  const demoMut = useSigninAsDemo();
   const [email, setEmail] = useState("");
   const [err, setErr] = useState<string | null>(null);
 
@@ -24,6 +25,17 @@ export default function Login() {
       if (e?.status === 404)
         setErr("No account with that email — try signing up.");
       else setErr(e?.message ?? "Sign-in failed.");
+    }
+  }
+
+  async function tryDemo() {
+    setErr(null);
+    try {
+      const res = await demoMut.mutateAsync();
+      setProviderId(res.providerId);
+      setLocation("/");
+    } catch (e: any) {
+      setErr(e?.message ?? "Demo sign-in failed.");
     }
   }
 
@@ -95,6 +107,35 @@ export default function Login() {
               <>
                 Continue
                 <ArrowRight className="h-4 w-4" />
+              </>
+            )}
+          </Button>
+
+          <div className="relative my-2">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-background px-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                or just exploring?
+              </span>
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            className="w-full h-12 gap-2 text-base"
+            disabled={demoMut.isPending}
+            onClick={tryDemo}
+          >
+            {demoMut.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4 text-accent" />
+                Try the demo
               </>
             )}
           </Button>

@@ -2,12 +2,20 @@ import type { CheckResult } from "@workspace/shared";
 import type { PlaceDetails } from "../placesClient";
 import type { SiteSnapshot } from "../pageFetch";
 import type { PageSpeedMobileResult } from "../pagespeedClient";
+import type { Ga4Last28Days } from "../ga4Client";
+import type { GscLast28Days } from "../gscClient";
 
 export interface ClientInput {
   name: string;
   websiteUrl: string | null;
   city: string | null;
   phone: string | null;
+}
+
+export interface ConnectedData<T> {
+  connected: boolean;
+  data: T | null;
+  error: string | null;
 }
 
 export interface AuditContext {
@@ -18,6 +26,8 @@ export interface AuditContext {
   siteError: string | null;
   pagespeed: PageSpeedMobileResult | null;
   pagespeedError: string | null;
+  ga4: ConnectedData<Ga4Last28Days> | null;
+  gsc: ConnectedData<GscLast28Days> | null;
 }
 
 export type CheckFn = (ctx: AuditContext) => CheckResult;

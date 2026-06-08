@@ -22,6 +22,32 @@ export const SignupBody = zod.object({
 
 
 /**
+ * @summary One-click demo sign-in — bootstraps a fully populated demo workspace
+ */
+export const SigninAsDemoResponse = zod.object({
+  "providerId": zod.string(),
+  "user": zod.object({
+  "userId": zod.string().uuid(),
+  "email": zod.string(),
+  "name": zod.string().nullish(),
+  "agencyId": zod.string().uuid(),
+  "agencyName": zod.string(),
+  "businessId": zod.string().uuid().nullish(),
+  "businessName": zod.string().nullish()
+}),
+  "business": zod.object({
+  "id": zod.string().uuid(),
+  "name": zod.string(),
+  "websiteUrl": zod.string().nullish(),
+  "city": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "placeId": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+}).optional()
+})
+
+
+/**
  * @summary Look up an account by email
  */
 export const SigninBody = zod.object({
@@ -158,6 +184,18 @@ export const GenerateAuditPlanParams = zod.object({
 export const GenerateAuditPlanResponse = zod.object({
   "markdown": zod.string(),
   "model": zod.string()
+})
+
+
+/**
+ * @summary Get the Google OAuth consent URL for a provider
+ */
+export const StartGoogleOAuthQueryParams = zod.object({
+  "provider": zod.enum(['ga4', 'gsc', 'gbp'])
+})
+
+export const StartGoogleOAuthResponse = zod.object({
+  "url": zod.string()
 })
 
 
