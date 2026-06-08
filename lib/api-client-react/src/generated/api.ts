@@ -26,7 +26,10 @@ import type {
   CreateClientInput,
   CurrentUser,
   HealthStatus,
-  RunAuditInput
+  RunAuditInput,
+  SigninInput,
+  SignupInput,
+  SignupResult
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -40,6 +43,148 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
+
+export const getSignupUrl = () => {
+
+
+
+
+  return `/api/auth/signup`
+}
+
+/**
+ * @summary Create an account + business in one shot
+ */
+export const signup = async (signupInput: SignupInput, options?: RequestInit): Promise<SignupResult> => {
+
+  return customFetch<SignupResult>(getSignupUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      signupInput,)
+  }
+);}
+
+
+
+
+export const getSignupMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof signup>>, TError,{data: BodyType<SignupInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof signup>>, TError,{data: BodyType<SignupInput>}, TContext> => {
+
+const mutationKey = ['signup'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof signup>>, {data: BodyType<SignupInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  signup(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SignupMutationResult = NonNullable<Awaited<ReturnType<typeof signup>>>
+    export type SignupMutationBody = BodyType<SignupInput>
+    export type SignupMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create an account + business in one shot
+ */
+export const useSignup = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof signup>>, TError,{data: BodyType<SignupInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof signup>>,
+        TError,
+        {data: BodyType<SignupInput>},
+        TContext
+      > => {
+      return useMutation(getSignupMutationOptions(options));
+    }
+
+export const getSigninUrl = () => {
+
+
+
+
+  return `/api/auth/signin`
+}
+
+/**
+ * @summary Look up an account by email
+ */
+export const signin = async (signinInput: SigninInput, options?: RequestInit): Promise<SignupResult> => {
+
+  return customFetch<SignupResult>(getSigninUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      signinInput,)
+  }
+);}
+
+
+
+
+export const getSigninMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof signin>>, TError,{data: BodyType<SigninInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof signin>>, TError,{data: BodyType<SigninInput>}, TContext> => {
+
+const mutationKey = ['signin'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof signin>>, {data: BodyType<SigninInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  signin(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SigninMutationResult = NonNullable<Awaited<ReturnType<typeof signin>>>
+    export type SigninMutationBody = BodyType<SigninInput>
+    export type SigninMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Look up an account by email
+ */
+export const useSignin = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof signin>>, TError,{data: BodyType<SigninInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof signin>>,
+        TError,
+        {data: BodyType<SigninInput>},
+        TContext
+      > => {
+      return useMutation(getSigninMutationOptions(options));
+    }
 
 export const getHealthCheckUrl = () => {
 

@@ -1,6 +1,6 @@
 # RankRight
 
-Live SEO audits for home service businesses. Add a client (name + website + city), run an audit, and get a weighted score + categorized findings (GBP, on-page SEO, performance, NAP, technical) with plain-language fixes.
+Self-serve SEO audits for home service businesses (HVAC, plumbing, electrical, roofing, cleaning). The owner signs up with their email + business name, and one click runs a real audit on their Google Business Profile, website, and mobile speed — scored, prioritized, and explained in plain English.
 
 ## Run & Operate
 
@@ -19,9 +19,9 @@ Live SEO audits for home service businesses. Add a client (name + website + city
 - `PORT` — required by api-server (default 5000)
 - `DEV_USER_PROVIDER_ID` (optional, non-prod) — provider id used when no `x-user-id` / bearer is sent; defaults to `dev-user`
 
-### Dev sign-in
+### Sign-up / sign-in
 
-The web app uses a header-based auth shim (`x-user-id`/`Authorization: Bearer …`) so Clerk or Supabase Auth can be dropped in by replacing `lib/auth.ts`. In dev, the login page just stores a `providerId` in localStorage which the api-client-react `setAuthTokenGetter` forwards on every request.
+Self-serve: anyone can sign up at `/signup` with their email + business name. The API creates an internal agency + user + business row in one shot and hands back a `providerId` (currently `email:<lower-cased email>`). The web app stores that providerId in localStorage; the generated React Query client forwards it as `x-user-id` on every request. To upgrade to real auth (Clerk, Supabase, etc.), replace the providerId-generating server route + the `setProviderId` localStorage call — the rest of the stack is auth-agnostic.
 
 ## Stack
 
@@ -57,10 +57,11 @@ The web app uses a header-based auth shim (`x-user-id`/`Authorization: Bearer �
 
 ## Product
 
-- Agency-scoped tenancy: one user → one agency → many clients
-- Add client (name, website, city, phone)
-- Run audit: snapshots homepage + up to 3 service pages, calls Google Places New + PageSpeed Insights mobile, runs 17 real checks + 2 stub checks
+- Self-serve SaaS: business owner signs up with email + business name + website + city
+- One owner = one workspace = one business (internally still uses agency/clients tables for flexibility; the UI hides that abstraction)
+- Run audit: snapshots homepage + up to 3 service pages, calls Google Places New + PageSpeed Insights mobile, runs 17 real checks + 2 connect-to-verify stub checks
 - Weighted score 0–100, categorized findings, "Fix this next" top-5 ranked by impact = weight × (100 − score)
+- Audit history kept per business
 
 ## Gotchas
 

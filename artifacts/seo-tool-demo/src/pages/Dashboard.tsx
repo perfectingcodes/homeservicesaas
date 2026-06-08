@@ -1,91 +1,189 @@
-import { Link } from "wouter";
-import { useListClients } from "@workspace/api-client-react";
+import { Link, useLocation } from "wouter";
+import {
+  useGetCurrentUser,
+  useListClientAudits,
+  useRunAudit,
+  getListClientAuditsQueryKey,
+} from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Building2,
-  Plus,
-  ArrowRight,
+  Play,
+  Loader2,
   Sparkles,
+  ArrowUpRight,
   Globe,
   MapPin,
-  ArrowUpRight,
+  Phone,
+  Clock,
+  XCircle,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function Dashboard() {
-  const { data: clients, isLoading } = useListClients();
+  const [, setLocation] = useLocation();
+  const qc = useQueryClient();
+  const { data: me, isLoading } = useGetCurrentUser();
+  const businessId = me?.businessId ?? "";
+  const { data: audits, isLoading: auditsLoading } = useListClientAudits(
+    businessId,
+    { query: { enabled: !!businessId } as any },
+  );
+
+  const runMut = useRunAudit({
+    mutation: {
+      onSuccess: (res) => {
+        qc.invalidateQueries({
+          queryKey: getListClientAuditsQueryKey(businessId),
+        });
+        setLocation(`/audits/${res.audit.id}`);
+      },
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="max-w-5xl mx-auto px-6 lg:px-12 py-12 space-y-8">
+        <Skeleton className="h-12 w-64" />
+        <Skeleton className="h-48 w-full rounded-2xl" />
+      </div>
+    );
+  }
+
+  const latest = audits?.[0];
 
   return (
-    <div className="max-w-6xl mx-auto px-6 lg:px-12 py-12 lg:py-16 space-y-16">
+    <div className="max-w-5xl mx-auto px-6 lg:px-12 py-10 lg:py-14 space-y-14">
+      {/* Header */}
       <header className="space-y-6 max-w-3xl">
         <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.24em] text-muted-foreground">
           <Sparkles className="h-3 w-3 text-accent" />
-          Overview
+          {me?.businessName ?? "Your business"}
         </div>
         <h1 className="font-display text-5xl lg:text-6xl leading-[1.02] tracking-tight text-balance">
-          Live SEO audits for{" "}
-          <span className="font-display-italic text-accent">home service</span>{" "}
-          businesses.
+          Hey there{me?.name ? `, ${me.name.split(" ")[0]}` : ""}.{" "}
+          <span className="font-display-italic text-accent">Ready</span> for
+          your next audit?
         </h1>
         <p className="text-[17px] leading-relaxed text-muted-foreground max-w-2xl">
-          Add a client, run a real audit on their live site + Google Business
-          Profile, and walk them through what to fix next.
+          One click runs a fresh audit on your Google Business Profile, mobile
+          speed, on-page SEO, and citation consistency. Takes about a minute.
         </p>
+        <div className="pt-2">
+          <Button
+            size="lg"
+            className="gap-2 h-12 px-6 text-base"
+            disabled={runMut.isPending || !businessId}
+            onClick={() =>
+              businessId && runMut.mutate({ data: { clientId: businessId } })
+            }
+          >
+            {runMut.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Running your audit…
+              </>
+            ) : (
+              <>
+                <Play className="h-4 w-4" />
+                Run audit now
+              </>
+            )}
+          </Button>
+        </div>
       </header>
 
-      <section className="grid sm:grid-cols-3 gap-px bg-border rounded-2xl overflow-hidden border">
-        <Stat n={clients?.length ?? 0} label="Clients" sub="In your agency" />
-        <Stat n={19} label="Checks per audit" sub="GBP · SEO · Perf · NAP" />
-        <Stat
-          n="60s"
-          label="Average run"
-          sub="Real Places + PSI calls"
-        />
+      {/* Latest audit summary */}
+      {latest && (
+        <section>
+          <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground mb-4">
+            Latest audit
+          </div>
+          <Link href={`/audits/${latest.id}`}>
+            <div className="group border rounded-2xl bg-card px-6 py-7 hover:bg-muted/40 cursor-pointer transition-colors flex items-center gap-8">
+              <div>
+                <div className="font-display text-6xl tabular-nums tracking-tight leading-none">
+                  {latest.score ?? "—"}
+                </div>
+                <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground mt-2">
+                  Score
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[15px] font-medium tracking-tight">
+                  {new Date(latest.startedAt).toLocaleString()}
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  <StatusInline status={latest.status} />
+                </div>
+              </div>
+              <ArrowUpRight className="h-5 w-5 text-muted-foreground/40 group-hover:text-accent transition-colors" />
+            </div>
+          </Link>
+        </section>
+      )}
+
+      {/* Business profile card */}
+      <section>
+        <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground mb-4">
+          Your business
+        </div>
+        <div className="border rounded-2xl bg-card px-6 py-6">
+          <div className="font-display text-3xl tracking-tight">
+            {me?.businessName ?? "—"}
+          </div>
+          <div className="flex flex-wrap gap-x-5 gap-y-2 mt-3 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <Globe className="h-3.5 w-3.5" />
+              Website on file
+            </span>
+            <span className="flex items-center gap-1.5">
+              <MapPin className="h-3.5 w-3.5" />
+              City on file
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Phone className="h-3.5 w-3.5" />
+              Edit in settings
+            </span>
+          </div>
+        </div>
       </section>
 
+      {/* History */}
       <section>
-        <div className="flex items-end justify-between gap-4 mb-6">
-          <div>
-            <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground mb-2">
-              Clients
-            </div>
-            <h2 className="font-display text-3xl tracking-tight">Recent activity</h2>
-          </div>
-          <Link href="/clients">
-            <Button variant="ghost" className="gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-              View all
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Button>
-          </Link>
+        <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground mb-4">
+          Audit history
         </div>
-
-        {isLoading ? (
-          <Skeleton className="h-40 w-full rounded-2xl" />
-        ) : !clients || clients.length === 0 ? (
-          <EmptyClients />
+        {auditsLoading ? (
+          <Skeleton className="h-24 w-full rounded-2xl" />
+        ) : !audits || audits.length === 0 ? (
+          <div className="border rounded-2xl bg-card px-6 py-14 text-center">
+            <Clock className="h-7 w-7 mx-auto mb-3 text-muted-foreground/60" />
+            <h3 className="font-display text-2xl tracking-tight">
+              No audits yet
+            </h3>
+            <p className="text-muted-foreground mt-2 max-w-md mx-auto">
+              Run your first audit above. It takes about a minute and the
+              results stick around so you can compare.
+            </p>
+          </div>
         ) : (
           <div className="border rounded-2xl overflow-hidden bg-card divide-y">
-            {clients.slice(0, 6).map((c) => (
-              <Link key={c.id} href={`/clients/${c.id}`}>
-                <div className="group flex items-center gap-5 px-5 py-4 hover:bg-muted/40 transition-colors cursor-pointer">
-                  <div className="h-10 w-10 rounded-xl bg-foreground/5 flex items-center justify-center shrink-0 font-display italic text-lg text-foreground/70">
-                    {c.name.slice(0, 1).toUpperCase()}
+            {audits.map((a) => (
+              <Link key={a.id} href={`/audits/${a.id}`}>
+                <div className="group flex items-center gap-5 px-5 sm:px-6 py-4 hover:bg-muted/40 transition-colors cursor-pointer">
+                  <div className="w-14 shrink-0">
+                    <div className="font-display text-3xl tabular-nums tracking-tight">
+                      {a.score ?? "—"}
+                    </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium tracking-tight truncate">{c.name}</div>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5 text-[12px] text-muted-foreground">
-                      {c.city && (
-                        <span className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          {c.city}
-                        </span>
-                      )}
-                      {c.websiteUrl && (
-                        <span className="flex items-center gap-1 truncate max-w-[240px]">
-                          <Globe className="h-3 w-3" />
-                          {c.websiteUrl.replace(/^https?:\/\/(www\.)?/, "")}
-                        </span>
-                      )}
+                    <div className="font-medium text-[14px] tracking-tight">
+                      {new Date(a.startedAt).toLocaleString()}
+                    </div>
+                    <div className="text-[12px] mt-0.5">
+                      <StatusInline status={a.status} />
                     </div>
                   </div>
                   <ArrowUpRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-accent transition-colors" />
@@ -99,48 +197,30 @@ export default function Dashboard() {
   );
 }
 
-function Stat({
-  n,
-  label,
-  sub,
-}: {
-  n: number | string;
-  label: string;
-  sub: string;
-}) {
-  return (
-    <div className="bg-card px-6 py-7">
-      <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-        {label}
-      </div>
-      <div className="mt-2 font-display text-5xl tracking-tight tabular-nums">
-        {n}
-      </div>
-      <div className="text-[12px] text-muted-foreground mt-1.5">{sub}</div>
-    </div>
-  );
-}
-
-function EmptyClients() {
-  return (
-    <div className="border rounded-2xl bg-card px-6 py-16 text-center">
-      <div
-        aria-hidden
-        className="mx-auto mb-5 h-14 w-14 rounded-2xl bg-accent/10 flex items-center justify-center"
-      >
-        <Building2 className="h-6 w-6 text-accent" />
-      </div>
-      <h3 className="font-display text-2xl tracking-tight">No clients yet</h3>
-      <p className="text-muted-foreground mt-2 text-[15px] max-w-md mx-auto">
-        Add the agency's first real client to run a live audit. It takes about a
-        minute end-to-end.
-      </p>
-      <Link href="/clients">
-        <Button className="mt-6 gap-1.5">
-          <Plus className="h-4 w-4" />
-          Add a client
-        </Button>
-      </Link>
-    </div>
-  );
+function StatusInline({ status }: { status: string }) {
+  if (status === "running") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+        <Loader2 className="h-3 w-3 animate-spin" />
+        Running
+      </span>
+    );
+  }
+  if (status === "complete") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+        <span className={cn("h-1.5 w-1.5 rounded-full bg-emerald-500")} />
+        Complete
+      </span>
+    );
+  }
+  if (status === "failed") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-destructive">
+        <XCircle className="h-3 w-3" />
+        Failed
+      </span>
+    );
+  }
+  return null;
 }

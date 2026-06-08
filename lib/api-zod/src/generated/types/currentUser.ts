@@ -12,4 +12,6 @@ export interface CurrentUser {
   name?: string | null;
   agencyId: string;
   agencyName: string;
+  businessId?: string | null;
+  businessName?: string | null;
 }

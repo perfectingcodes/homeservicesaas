@@ -17,6 +17,42 @@ tags:
   - name: auth
     description: Session / current user
 paths:
+  /auth/signup:
+    post:
+      operationId: signup
+      tags: [auth]
+      summary: Create an account + business in one shot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupInput"
+      responses:
+        "201":
+          description: created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignupResult"
+  /auth/signin:
+    post:
+      operationId: signin
+      tags: [auth]
+      summary: Look up an account by email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SigninInput"
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignupResult"
   /healthz:
     get:
       operationId: healthCheck
@@ -175,11 +211,54 @@ components:
           format: uuid
         agencyName:
           type: string
+        businessId:
+          type: string
+          format: uuid
+          nullable: true
+        businessName:
+          type: string
+          nullable: true
       required:
         - userId
         - email
         - agencyId
         - agencyName
+    SignupInput:
+      type: object
+      properties:
+        email:
+          type: string
+        ownerName:
+          type: string
+          nullable: true
+        businessName:
+          type: string
+        websiteUrl:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+      required: [email, businessName]
+    SigninInput:
+      type: object
+      properties:
+        email:
+          type: string
+      required: [email]
+    SignupResult:
+      type: object
+      properties:
+        providerId:
+          type: string
+        user:
+          $ref: "#/components/schemas/CurrentUser"
+        business:
+          $ref: "#/components/schemas/Client"
+      required: [providerId, user]
     Client:
       type: object
       properties:
