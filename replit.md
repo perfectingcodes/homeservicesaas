@@ -4,12 +4,30 @@ Self-serve SEO audits for home service businesses (HVAC, plumbing, electrical, r
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/db run push` — push the v1 schema to the DB (first time)
-- `pnpm --filter @workspace/scripts run seed` — seed one agency + one user + one client
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm --filter @workspace/seo-tool-demo run dev` — run the web app (Vite)
+### First time on Replit
+
+1. **Add a Postgres database** — Replit → Tools → Postgres (or any external Neon/Supabase). This automatically sets `DATABASE_URL` on the workspace.
+2. **Generate an encryption key** for stored OAuth tokens. In the shell:
+   ```
+   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   ```
+   Copy the output and add it to Replit Secrets as `TOKEN_ENC_KEY`.
+3. **Push the DB schema**:
+   ```
+   pnpm --filter @workspace/db run push
+   ```
+4. **Click the Run button** — the `Project` workflow (in `.replit`) starts the API server on port 5000 and the web app on port 5173 in parallel.
+5. In the webview, click **Try the demo** on the login page. The API creates Mike's HVAC demo workspace + 3 audits and signs you in.
+
+If the demo button errors, the message will tell you exactly what to fix (missing DATABASE_URL, schema not pushed, etc.).
+
+### Useful scripts
+
+- `pnpm run dev` — start API + web in parallel (same as Replit Run)
+- `pnpm run db:push` — push DB schema changes
 - `pnpm run typecheck` — full typecheck across all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas
+- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
+- `pnpm --filter @workspace/scripts run seed` — manually re-seed the demo data (the demo button does this idempotently too)
 
 ### Required env
 

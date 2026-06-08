@@ -126,19 +126,34 @@ router.post("/auth/signup", async (req, res) => {
   res.status(201).json(out);
 });
 
-router.post("/auth/demo", async (_req, res) => {
+router.post("/auth/demo", async (req, res) => {
+  const log = req.log ?? console;
   try {
     await bootstrapDemo();
     const out = await buildResult(DEMO_PROVIDER_ID);
     if (!out) {
-      res.status(500).json({ error: "demo_bootstrap_failed" });
+      log.error("demo bootstrap returned no user");
+      res.status(500).json({
+        error: "demo_bootstrap_failed",
+        message:
+          "Bootstrap finished but the demo user wasn't found. Did the DB schema get pushed? Try `pnpm --filter @workspace/db run push`.",
+      });
       return;
     }
     res.status(200).json(out);
   } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    log.error({ err: e }, "demo bootstrap threw");
+    let hint = msg;
+    if (/relation .* does not exist|no such table/i.test(msg)) {
+      hint =
+        "DB schema isn't pushed. Run `pnpm --filter @workspace/db run push` against your DATABASE_URL.";
+    } else if (/ECONNREFUSED|ENOTFOUND|password authentication failed/i.test(msg)) {
+      hint = `Can't reach the DB. Check DATABASE_URL. Underlying error: ${msg}`;
+    }
     res.status(500).json({
       error: "demo_bootstrap_failed",
-      message: e instanceof Error ? e.message : String(e),
+      message: hint,
     });
   }
 });
