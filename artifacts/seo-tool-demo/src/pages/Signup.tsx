@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation, Link } from "wouter";
-import { useSignup } from "@workspace/api-client-react";
+import { useSignup, useSigninAsDemo } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +10,7 @@ import { ArrowRight, Sparkles, Loader2 } from "lucide-react";
 export default function Signup() {
   const [, setLocation] = useLocation();
   const signupMut = useSignup();
+  const demoMut = useSigninAsDemo();
   const [form, setForm] = useState({
     email: "",
     ownerName: "",
@@ -194,6 +195,43 @@ export default function Signup() {
             <p className="text-[11px] text-muted-foreground text-center">
               No credit card. We never email you marketing junk.
             </p>
+
+            <div className="relative my-1">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-background px-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                  or just kicking the tires?
+                </span>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              className="w-full h-12 gap-2 text-base"
+              disabled={demoMut.isPending}
+              onClick={async () => {
+                try {
+                  const res = await demoMut.mutateAsync();
+                  setProviderId(res.providerId);
+                  setLocation("/");
+                } catch (e: any) {
+                  setErr(e?.message ?? "Demo sign-in failed.");
+                }
+              }}
+            >
+              {demoMut.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 text-accent" />
+                  Try the demo instead
+                </>
+              )}
+            </Button>
           </form>
         </div>
       </div>

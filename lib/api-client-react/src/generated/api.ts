@@ -121,6 +121,76 @@ export const useSignup = <TError = ErrorType<unknown>,
       return useMutation(getSignupMutationOptions(options));
     }
 
+export const getSigninAsDemoUrl = () => {
+
+
+
+
+  return `/api/auth/demo`
+}
+
+/**
+ * @summary One-click demo sign-in — bootstraps a fully populated demo workspace
+ */
+export const signinAsDemo = async ( options?: RequestInit): Promise<SignupResult> => {
+
+  return customFetch<SignupResult>(getSigninAsDemoUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getSigninAsDemoMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof signinAsDemo>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof signinAsDemo>>, TError,void, TContext> => {
+
+const mutationKey = ['signinAsDemo'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof signinAsDemo>>, void> = () => {
+
+
+          return  signinAsDemo(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SigninAsDemoMutationResult = NonNullable<Awaited<ReturnType<typeof signinAsDemo>>>
+
+    export type SigninAsDemoMutationError = ErrorType<unknown>
+
+    /**
+ * @summary One-click demo sign-in — bootstraps a fully populated demo workspace
+ */
+export const useSigninAsDemo = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof signinAsDemo>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof signinAsDemo>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getSigninAsDemoMutationOptions(options));
+    }
+
 export const getSigninUrl = () => {
 
 

@@ -35,6 +35,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SignupResult"
+  /auth/demo:
+    post:
+      operationId: signinAsDemo
+      tags: [auth]
+      summary: One-click demo sign-in — bootstraps a fully populated demo workspace
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignupResult"
   /auth/signin:
     post:
       operationId: signin

@@ -37,7 +37,13 @@ GBP (Google Business Profile) is wired but requires Google to approve API access
 
 ### Sign-up / sign-in
 
-Self-serve: anyone can sign up at `/signup` with their email + business name. The API creates an internal agency + user + business row in one shot and hands back a `providerId` (currently `email:<lower-cased email>`). The web app stores that providerId in localStorage; the generated React Query client forwards it as `x-user-id` on every request. To upgrade to real auth (Clerk, Supabase, etc.), replace the providerId-generating server route + the `setProviderId` localStorage call — the rest of the stack is auth-agnostic.
+Three paths:
+
+- **Try the demo** — biggest button on both `/signup` and `/signin`. Calls `POST /auth/demo`, which idempotently bootstraps a fully-populated demo workspace (Mike's HVAC & Plumbing in Austin) with 3 audit runs and 19 realistic check results on the latest one, then signs you in. Same demo workspace every time — re-clicking just re-uses it. Perfect for dev / screenshots / showing the app to someone in 5 seconds.
+- **Sign up** at `/signup` with email + business name → creates a workspace + business + provider id (`email:<lower-cased email>`).
+- **Sign in** at `/signin` with the email you signed up with.
+
+The web app stores the provider id in localStorage; the generated React Query client forwards it as `x-user-id` on every request. To upgrade to real auth (Clerk, Supabase), replace the provider-id-generating server route + the `setProviderId` localStorage call — the rest of the stack is auth-agnostic.
 
 ## Stack
 

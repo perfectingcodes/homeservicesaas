@@ -7,6 +7,7 @@ import {
   usersTable,
   clientsTable,
 } from "@workspace/db";
+import { bootstrapDemo, DEMO_PROVIDER_ID } from "../lib/demoData";
 
 const router: IRouter = Router();
 
@@ -123,6 +124,23 @@ router.post("/auth/signup", async (req, res) => {
     return;
   }
   res.status(201).json(out);
+});
+
+router.post("/auth/demo", async (_req, res) => {
+  try {
+    await bootstrapDemo();
+    const out = await buildResult(DEMO_PROVIDER_ID);
+    if (!out) {
+      res.status(500).json({ error: "demo_bootstrap_failed" });
+      return;
+    }
+    res.status(200).json(out);
+  } catch (e) {
+    res.status(500).json({
+      error: "demo_bootstrap_failed",
+      message: e instanceof Error ? e.message : String(e),
+    });
+  }
 });
 
 router.post("/auth/signin", async (req, res) => {
