@@ -1,124 +1,104 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
+import { useSignin } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { setProviderId } from "@/lib/auth";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 
 export default function Login() {
   const [, setLocation] = useLocation();
-  const [id, setId] = useState("dev-user");
+  const signinMut = useSignin();
+  const [email, setEmail] = useState("");
+  const [err, setErr] = useState<string | null>(null);
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setProviderId(id.trim() || "dev-user");
-    setLocation("/");
+    setErr(null);
+    try {
+      const res = await signinMut.mutateAsync({ data: { email } });
+      setProviderId(res.providerId);
+      setLocation("/");
+    } catch (e: any) {
+      if (e?.status === 404)
+        setErr("No account with that email — try signing up.");
+      else setErr(e?.message ?? "Sign-in failed.");
+    }
   }
 
   return (
-    <div className="min-h-screen w-full grid lg:grid-cols-[1.1fr_1fr] bg-background">
-      {/* Brand panel */}
-      <div className="relative hidden lg:flex flex-col justify-between bg-sidebar text-white overflow-hidden">
-        <div className="absolute inset-0 bg-grain opacity-40 pointer-events-none" />
-        <div
-          aria-hidden
-          className="absolute -top-32 -right-32 w-[28rem] h-[28rem] rounded-full blur-3xl opacity-25"
-          style={{ background: "radial-gradient(circle, hsl(18 95% 56%) 0%, transparent 60%)" }}
-        />
-
-        <header className="relative z-10 px-12 pt-10 flex items-center gap-2.5">
+    <div className="min-h-screen w-full grid place-items-center bg-background px-6">
+      <div className="w-full max-w-sm">
+        <div className="flex items-center gap-2.5 mb-10">
           <span
             className="inline-flex items-center justify-center rounded-[8px] bg-accent text-accent-foreground font-display italic text-[18px] leading-none"
             style={{ width: 30, height: 30, paddingTop: 2 }}
           >
             R
           </span>
-          <span className="text-[15px] font-semibold tracking-tight">RankRight</span>
-        </header>
-
-        <div className="relative z-10 px-12 pb-16 max-w-xl">
-          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.24em] text-white/50 mb-6">
-            <Sparkles className="h-3 w-3 text-accent" />
-            Local SEO, audited live
-          </div>
-          <h1 className="text-5xl xl:text-[3.75rem] leading-[1.02] font-display tracking-tight text-white text-balance">
-            See exactly{" "}
-            <span className="font-display-italic text-accent">what's holding</span>{" "}
-            your client's ranking back.
-          </h1>
-          <p className="mt-6 text-white/60 text-[15px] leading-relaxed max-w-md">
-            Real audits across Google Business Profile, on-page SEO, mobile
-            performance, and NAP consistency — scored, prioritized, and ready to
-            walk a client through.
-          </p>
-
-          <div className="mt-12 grid grid-cols-3 gap-8 max-w-md">
-            <Stat n="19" label="checks" />
-            <Stat n="< 1m" label="setup" />
-            <Stat n="60s" label="per audit" />
-          </div>
+          <span className="text-base font-semibold tracking-tight">
+            RankRight
+          </span>
         </div>
-      </div>
 
-      {/* Form panel */}
-      <div className="flex flex-col justify-center px-6 sm:px-10 lg:px-16 xl:px-24 py-16">
-        <div className="w-full max-w-md mx-auto">
-          <div className="lg:hidden flex items-center gap-2.5 mb-10">
-            <span
-              className="inline-flex items-center justify-center rounded-[8px] bg-accent text-accent-foreground font-display italic text-[18px] leading-none"
-              style={{ width: 30, height: 30, paddingTop: 2 }}
+        <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground mb-3">
+          Sign in
+        </div>
+        <h2 className="font-display text-4xl tracking-tight text-balance">
+          Welcome <span className="font-display-italic">back.</span>
+        </h2>
+        <p className="text-muted-foreground mt-3 text-[15px]">
+          New here?{" "}
+          <Link
+            href="/signup"
+            className="text-foreground underline underline-offset-4"
+          >
+            Get your first audit free
+          </Link>
+          .
+        </p>
+
+        <form className="mt-8 space-y-4" onSubmit={submit}>
+          <div className="space-y-1.5">
+            <Label
+              htmlFor="email"
+              className="text-[11px] uppercase tracking-wider text-muted-foreground"
             >
-              R
-            </span>
-            <span className="text-base font-semibold tracking-tight">RankRight</span>
+              Email
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoFocus
+              placeholder="you@business.com"
+              className="h-11"
+            />
           </div>
-
-          <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground mb-3">
-            Sign in
-          </div>
-          <h2 className="font-display text-4xl tracking-tight text-balance">
-            Welcome <span className="font-display-italic">back.</span>
-          </h2>
-          <p className="text-muted-foreground mt-3 text-[15px]">
-            Enter your provider id. The seed creates{" "}
-            <code className="font-mono text-foreground bg-muted px-1.5 py-0.5 rounded text-[13px]">
-              dev-user
-            </code>
-            . Clerk / Supabase swap-in uses the same header.
-          </p>
-
-          <form className="mt-10 space-y-5" onSubmit={submit}>
-            <div className="space-y-2">
-              <Label htmlFor="providerId" className="text-xs uppercase tracking-wider text-muted-foreground">
-                Provider id
-              </Label>
-              <Input
-                id="providerId"
-                value={id}
-                onChange={(e) => setId(e.target.value)}
-                placeholder="dev-user"
-                autoFocus
-                className="h-12 text-base"
-              />
+          {err && (
+            <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
+              {err}
             </div>
-            <Button type="submit" size="lg" className="w-full h-12 gap-2 text-base">
-              Continue
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Stat({ n, label }: { n: string; label: string }) {
-  return (
-    <div>
-      <div className="font-display text-4xl tracking-tight text-white">{n}</div>
-      <div className="text-[11px] uppercase tracking-[0.18em] text-white/50 mt-1">
-        {label}
+          )}
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full h-12 gap-2 text-base"
+            disabled={signinMut.isPending}
+          >
+            {signinMut.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                Continue
+                <ArrowRight className="h-4 w-4" />
+              </>
+            )}
+          </Button>
+        </form>
       </div>
     </div>
   );

@@ -7,17 +7,17 @@ import { queryClient } from "@/lib/queryClient";
 import { getProviderId } from "@/lib/auth";
 
 import Dashboard from "@/pages/Dashboard";
-import ClientsList from "@/pages/ClientsList";
-import ClientDetail from "@/pages/ClientDetail";
+import History from "@/pages/History";
 import AuditView from "@/pages/AuditView";
 import Login from "@/pages/Login";
+import Signup from "@/pages/Signup";
 import NotFound from "@/pages/not-found";
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const [, setLocation] = useLocation();
   const hasAuth = getProviderId();
   if (!hasAuth) {
-    setLocation("/login");
+    setLocation("/signup");
     return null;
   }
   return <>{children}</>;
@@ -28,16 +28,15 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Switch>
+          <Route path="/signup" component={Signup} />
+          <Route path="/signin" component={Login} />
           <Route path="/login" component={Login} />
           <Route>
             <AuthGate>
               <AppLayout>
                 <Switch>
                   <Route path="/" component={Dashboard} />
-                  <Route path="/clients" component={ClientsList} />
-                  <Route path="/clients/:id">
-                    {(params) => <ClientDetail id={params.id} />}
-                  </Route>
+                  <Route path="/history" component={History} />
                   <Route path="/audits/:id">
                     {(params) => <AuditView id={params.id} />}
                   </Route>

@@ -9,6 +9,49 @@ import * as zod from 'zod';
 
 
 /**
+ * @summary Create an account + business in one shot
+ */
+export const SignupBody = zod.object({
+  "email": zod.string(),
+  "ownerName": zod.string().nullish(),
+  "businessName": zod.string(),
+  "websiteUrl": zod.string().nullish(),
+  "city": zod.string().nullish(),
+  "phone": zod.string().nullish()
+})
+
+
+/**
+ * @summary Look up an account by email
+ */
+export const SigninBody = zod.object({
+  "email": zod.string()
+})
+
+export const SigninResponse = zod.object({
+  "providerId": zod.string(),
+  "user": zod.object({
+  "userId": zod.string().uuid(),
+  "email": zod.string(),
+  "name": zod.string().nullish(),
+  "agencyId": zod.string().uuid(),
+  "agencyName": zod.string(),
+  "businessId": zod.string().uuid().nullish(),
+  "businessName": zod.string().nullish()
+}),
+  "business": zod.object({
+  "id": zod.string().uuid(),
+  "name": zod.string(),
+  "websiteUrl": zod.string().nullish(),
+  "city": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "placeId": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+}).optional()
+})
+
+
+/**
  * Returns server health status
  * @summary Health check
  */
@@ -25,7 +68,9 @@ export const GetCurrentUserResponse = zod.object({
   "email": zod.string(),
   "name": zod.string().nullish(),
   "agencyId": zod.string().uuid(),
-  "agencyName": zod.string()
+  "agencyName": zod.string(),
+  "businessId": zod.string().uuid().nullish(),
+  "businessName": zod.string().nullish()
 })
 
 

@@ -15,6 +15,21 @@ export interface CurrentUser {
   name?: string | null;
   agencyId: string;
   agencyName: string;
+  businessId?: string | null;
+  businessName?: string | null;
+}
+
+export interface SignupInput {
+  email: string;
+  ownerName?: string | null;
+  businessName: string;
+  websiteUrl?: string | null;
+  city?: string | null;
+  phone?: string | null;
+}
+
+export interface SigninInput {
+  email: string;
 }
 
 export interface Client {
@@ -25,6 +40,12 @@ export interface Client {
   phone?: string | null;
   placeId?: string | null;
   createdAt: string;
+}
+
+export interface SignupResult {
+  providerId: string;
+  user: CurrentUser;
+  business?: Client;
 }
 
 export interface CreateClientInput {
