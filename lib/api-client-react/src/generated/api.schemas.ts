@@ -162,3 +162,20 @@ export interface OkResult {
   ok: boolean;
 }
 
+export type StartGoogleOAuthParams = {
+provider: StartGoogleOAuthProvider;
+};
+
+export type StartGoogleOAuthProvider = typeof StartGoogleOAuthProvider[keyof typeof StartGoogleOAuthProvider];
+
+
+export const StartGoogleOAuthProvider = {
+  ga4: 'ga4',
+  gsc: 'gsc',
+  gbp: 'gbp',
+} as const;
+
+export type StartGoogleOAuth200 = {
+  url: string;
+};
+

@@ -24,5 +24,8 @@ export * from './runAuditInput';
 export * from './signinInput';
 export * from './signupInput';
 export * from './signupResult';
+export * from './startGoogleOAuth200';
+export * from './startGoogleOAuthParams';
+export * from './startGoogleOAuthProvider';
 export * from './upsertConnectionInput';
 export * from './upsertConnectionInputProvider';

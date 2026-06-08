@@ -162,6 +162,18 @@ export const GenerateAuditPlanResponse = zod.object({
 
 
 /**
+ * @summary Get the Google OAuth consent URL for a provider
+ */
+export const StartGoogleOAuthQueryParams = zod.object({
+  "provider": zod.enum(['ga4', 'gsc', 'gbp'])
+})
+
+export const StartGoogleOAuthResponse = zod.object({
+  "url": zod.string()
+})
+
+
+/**
  * @summary List the current business's connected providers (GBP/GA4/GSC)
  */
 export const ListConnectionsResponseItem = zod.object({

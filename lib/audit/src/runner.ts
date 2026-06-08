@@ -1,16 +1,21 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import {
   db,
   clientsTable,
   auditsTable,
   auditChecksTable,
+  clientConnectionsTable,
   type Audit,
   type Client,
 } from "@workspace/db";
 import type { CheckResult } from "@workspace/shared";
+import { decrypt } from "@workspace/shared";
 import { snapshotSite } from "./pageFetch";
 import { resolvePlace, getPlaceDetails } from "./placesClient";
 import { runPageSpeedMobile } from "./pagespeedClient";
+import { refreshAccessToken } from "./oauthGoogle";
+import { ga4Last28Days } from "./ga4Client";
+import { gscLast28Days } from "./gscClient";
 import {
   type AuditContext,
   type CheckFn,
@@ -138,7 +143,16 @@ export async function gatherContext(client: Client): Promise<AuditContext> {
     }
   })();
 
-  const [place, site, ps] = await Promise.all([placeP, siteP, psP]);
+  const ga4P = loadGa4(client.id);
+  const gscP = loadGsc(client.id);
+
+  const [place, site, ps, ga4, gsc] = await Promise.all([
+    placeP,
+    siteP,
+    psP,
+    ga4P,
+    gscP,
+  ]);
 
   return {
     client: clientInput,
@@ -148,7 +162,96 @@ export async function gatherContext(client: Client): Promise<AuditContext> {
     siteError: site.error,
     pagespeed: ps.psi,
     pagespeedError: ps.error,
+    ga4,
+    gsc,
   };
+}
+
+async function getAccessTokenForProvider(
+  clientId: string,
+  provider: "ga4" | "gsc" | "gbp",
+): Promise<{ accessToken: string; externalAccountId: string | null } | null> {
+  const conn = (
+    await db
+      .select()
+      .from(clientConnectionsTable)
+      .where(
+        and(
+          eq(clientConnectionsTable.clientId, clientId),
+          eq(clientConnectionsTable.provider, provider),
+        ),
+      )
+  )[0];
+  if (!conn || !conn.accessTokenEnc) return null;
+
+  const now = Date.now();
+  const expired = conn.expiresAt ? conn.expiresAt.getTime() <= now : false;
+
+  if (!expired) {
+    return {
+      accessToken: decrypt(conn.accessTokenEnc),
+      externalAccountId: conn.externalAccountId,
+    };
+  }
+
+  if (!conn.refreshTokenEnc) return null;
+  const refreshed = await refreshAccessToken(decrypt(conn.refreshTokenEnc));
+  await db
+    .update(clientConnectionsTable)
+    .set({
+      accessTokenEnc: (await import("@workspace/shared")).encrypt(
+        refreshed.accessToken,
+      ),
+      expiresAt: refreshed.expiresAt,
+      updatedAt: new Date(),
+    })
+    .where(eq(clientConnectionsTable.id, conn.id));
+  return {
+    accessToken: refreshed.accessToken,
+    externalAccountId: conn.externalAccountId,
+  };
+}
+
+async function loadGa4(clientId: string) {
+  try {
+    const tok = await getAccessTokenForProvider(clientId, "ga4");
+    if (!tok || !tok.externalAccountId) {
+      return { connected: !!tok, data: null, error: tok ? "No GA4 property selected" : null };
+    }
+    const data = await timeout(
+      ga4Last28Days(tok.accessToken, tok.externalAccountId),
+      15_000,
+      "ga4Last28Days",
+    );
+    return { connected: true, data, error: null };
+  } catch (e) {
+    return {
+      connected: true,
+      data: null,
+      error: e instanceof Error ? e.message : String(e),
+    };
+  }
+}
+
+async function loadGsc(clientId: string) {
+  try {
+    const tok = await getAccessTokenForProvider(clientId, "gsc");
+    if (!tok || !tok.externalAccountId) {
+      return { connected: !!tok, data: null, error: tok ? "No verified site selected" : null };
+    }
+    const data = await timeout(
+      gscLast28Days(tok.accessToken, tok.externalAccountId),
+      15_000,
+      "gscLast28Days",
+    );
+    return { connected: true, data, error: null };
+  } catch (e) {
+    return {
+      connected: true,
+      data: null,
+      error: e instanceof Error ? e.message : String(e),
+    };
+  }
 }
 
 export function scoreAudit(results: CheckResult[]): number {

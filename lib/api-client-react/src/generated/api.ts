@@ -33,6 +33,8 @@ import type {
   SigninInput,
   SignupInput,
   SignupResult,
+  StartGoogleOAuth200,
+  StartGoogleOAuthParams,
   UpsertConnectionInput
 } from './api.schemas';
 
@@ -787,6 +789,90 @@ export const useGenerateAuditPlan = <TError = ErrorType<void>,
       > => {
       return useMutation(getGenerateAuditPlanMutationOptions(options));
     }
+
+export const getStartGoogleOAuthUrl = (params: StartGoogleOAuthParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/auth/oauth/google/start?${stringifiedParams}` : `/api/auth/oauth/google/start`
+}
+
+/**
+ * @summary Get the Google OAuth consent URL for a provider
+ */
+export const startGoogleOAuth = async (params: StartGoogleOAuthParams, options?: RequestInit): Promise<StartGoogleOAuth200> => {
+
+  return customFetch<StartGoogleOAuth200>(getStartGoogleOAuthUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getStartGoogleOAuthQueryKey = (params?: StartGoogleOAuthParams,) => {
+    return [
+    `/api/auth/oauth/google/start`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getStartGoogleOAuthQueryOptions = <TData = Awaited<ReturnType<typeof startGoogleOAuth>>, TError = ErrorType<void>>(params: StartGoogleOAuthParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof startGoogleOAuth>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getStartGoogleOAuthQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof startGoogleOAuth>>> = ({ signal }) => startGoogleOAuth(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof startGoogleOAuth>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type StartGoogleOAuthQueryResult = NonNullable<Awaited<ReturnType<typeof startGoogleOAuth>>>
+export type StartGoogleOAuthQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get the Google OAuth consent URL for a provider
+ */
+
+export function useStartGoogleOAuth<TData = Awaited<ReturnType<typeof startGoogleOAuth>>, TError = ErrorType<void>>(
+ params: StartGoogleOAuthParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof startGoogleOAuth>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getStartGoogleOAuthQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 
 export const getListConnectionsUrl = () => {
 
